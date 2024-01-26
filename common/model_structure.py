@@ -86,7 +86,7 @@ class kstar_lstm():
             self.ystd  = [0.74135689, 1.44731883, 0.56747578, 0.23018484]
         else:
             self.ymean, self.ystd = ymean, ystd
-        self.models = [load_custom_model((10, 21), [200, 200], [200, 4], model_path + f'/best_model{i}') for i in range(self.nmodels)]
+        self.models = [load_custom_model((10, 21), [200, 200], [200, 4], model_path + f'/best_model{i}.h5') for i in range(self.nmodels)]
 
     def set_inputs(self, x):
         self.x = np.array(x) if len(np.shape(x)) == 3 else np.array([x])
@@ -105,7 +105,7 @@ class kstar_v220505():
         else:
             self.ymean, self.ystd = ymean, ystd
         self.nmodels = n_models
-        self.models = [load_custom_model((length, 18), [100, 100], [50, 4], model_path + f'/best_model{i}') for i in range(self.nmodels)]
+        self.models = [load_custom_model((length, 18), [100, 100], [50, 4], model_path + f'/best_model{i}.h5') for i in range(self.nmodels)]
 
     def set_inputs(self, x):
         self.x = np.array(x) if len(np.shape(x)) == 3 else np.array([x])
