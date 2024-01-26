@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "kstar-tokamak-simulator"
+version = "2.0.0-beta.1"
+description = "A tokamak (nuclear fusion reactor) simulator with LSTM-based neural network (KSTAR-NN)"
+authors = ["Jaemin Seo <jseo@cau.ac.kr>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+tensorflow-cpu = "^2.15.0"
+keras = "^2.15.0"
+# QtPy = "^2.4.1"
+numpy = "^1.26.3"
+scipy = "^1.12.0"
+# matplotlib = "^3.8.2"
+streamlit = "^1.30.0"
+plotly = "^5.18.0"
+pandas = "^2.2.0"
+pillow = "^10.2.0"
+# numba = "^0.58.1"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.1"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
