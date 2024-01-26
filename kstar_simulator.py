@@ -17,7 +17,6 @@ from PIL import Image
 from scipy import interpolate
 
 from common.model_structure import *
-from common.setting import *
 from common.utils import point_in_polygon
 from common.wall import *
 
@@ -36,9 +35,6 @@ PLOT_LENGTH = 40
 YEAR_IN = 2021
 EC_FREQ = 105.0e9
 _COLOR_TRANSPARENT = "rgba(0,0,0,0)"
-
-# Matplotlib rcParams setting
-rcParamsSetting(DPI)
 
 # Inputs
 input_names = [
