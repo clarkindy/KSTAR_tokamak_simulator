@@ -157,6 +157,18 @@ def initialize_session(session: Session):
     session.initialized = True
 
 
+def reset_session():
+    session = typing.cast(Session, st.session_state)
+    for name in output_params2 + ["fgw_history", "lstm_in"]:
+        session[name].clear()
+    # Initialize input parameters
+    for name, init in zip(input_names, input_init):
+        setattr(session, name, init)
+    predict0d(session, steady=True)
+    session.predict = False
+    session.dump_outputs = False
+
+
 def render_kstar():
     st.markdown(
         """\
@@ -187,7 +199,7 @@ def render_kstar():
         initialize_session(session)
 
     # Top layout
-    top1, top2, top3, top4 = st.columns([1, 1, 1, 1])
+    top1, top21, top22, top3, top4 = st.columns([2, 1, 1, 2, 2])
     with top1:
         st.number_input(
             "\\# of models",
@@ -196,10 +208,12 @@ def render_kstar():
             key="n_models",
             on_change=reset_model_number,
         )
-    with top2:
+    with top21:
         st.button("Shuffle models", on_click=shuffle_models)
+    with top22:
+        st.button("Clear history", on_click=reset_session)
     with top3:
-        is_running = st.toggle("Run")
+        is_running = st.toggle("Auto-run after slider change")
     with top4:
         over_plot = st.checkbox("Overlap device")
 
