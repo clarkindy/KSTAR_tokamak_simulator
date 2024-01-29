@@ -195,7 +195,6 @@ def render_kstar():
             max_value=MAX_MODELS,
             key="n_models",
             on_change=reset_model_number,
-            args=(session,),
         )
     with top2:
         st.button("Shuffle models", on_click=shuffle_models)
@@ -248,25 +247,23 @@ def render_kstar():
             "▶▶ 1s ▶▶",
             use_container_width=True,
             on_click=relax_run,
-            kwargs=dict(session=session, seconds=1),
         )
     with bottom2:
         st.button(
             "▶▶ 2s ▶▶",
             use_container_width=True,
             on_click=relax_run,
-            kwargs=dict(session=session, seconds=2),
         )
     with bottom3:
         st.button(
             "Toggle display (Plot ↔ Table)",
             use_container_width=True,
             on_click=toggle_evolution_mode,
-            args=(session,),
         )
 
 
-def reset_model_number(session: Session):
+def reset_model_number():
+    session = typing.cast(Session, st.session_state)
     session.kstar_lstm.nmodels = session.n_models
     session.bpw_nn.nmodels = session.n_models
 
@@ -695,7 +692,8 @@ def shuffle_models():
     st.toast("Models shuffled!")
 
 
-def relax_run(session: Session, steps=None, seconds=None):
+def relax_run(steps=None, seconds=None):
+    session = typing.cast(Session, st.session_state)
     if steps is None and seconds is None:
         raise ValueError("Either steps or seconds should be given")
     if steps is None:
@@ -704,7 +702,8 @@ def relax_run(session: Session, steps=None, seconds=None):
         predict0d(session, steady=False)
 
 
-def toggle_evolution_mode(session: Session):
+def toggle_evolution_mode():
+    session = typing.cast(Session, st.session_state)
     session.dump_outputs = not session.dump_outputs
 
 
