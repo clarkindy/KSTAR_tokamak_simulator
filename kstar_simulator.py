@@ -247,12 +247,14 @@ def render_kstar():
             "▶▶ 1s ▶▶",
             use_container_width=True,
             on_click=relax_run,
+            kwargs=dict(seconds=1),
         )
     with bottom2:
         st.button(
             "▶▶ 2s ▶▶",
             use_container_width=True,
             on_click=relax_run,
+            kwargs=dict(seconds=2),
         )
     with bottom3:
         st.button(
