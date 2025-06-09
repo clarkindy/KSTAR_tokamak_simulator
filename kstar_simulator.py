@@ -6,7 +6,7 @@ import sys
 import typing
 from collections import deque, namedtuple
 from collections.abc import Sequence
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -17,9 +17,18 @@ import streamlit as st
 from PIL import Image
 from scipy import interpolate
 
-from common.model_structure import *
+from common.model_structure import (
+    load_k2rz_data,
+    load_kstar_nn_data,
+    load_kstar_v220505_data,
+    load_tf_dense_data,
+    predict_k2rz,
+    predict_kstar_nn,
+    predict_kstar_v220505,
+    predict_tf_dense,
+)
 from common.utils import point_in_polygon
-from common.wall import *
+from common.wall import Rwalls, Zwalls
 
 # Setting
 base_path = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -174,7 +183,6 @@ def predict_n_models(
 
 
 def initialize_session(session: Session):
-    n_models = MAX_MODELS
     session.n_models = 1
     # Initialize model indices
     session.kstar_lstm_indices = list(range(MAX_MODELS))
