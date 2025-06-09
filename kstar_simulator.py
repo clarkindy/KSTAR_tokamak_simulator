@@ -220,13 +220,13 @@ def render_kstar():
         """\
         <style>
           /* Wider main section */
-          .main > .block-container {
+          .stMain > .stMainBlockContainer {
             max-width: 96rem;
           }
 
           /* Top layout */
-          .main
-            > .block-container
+          .stMain
+            > .stMainBlockContainer
             > :first-child
             > :first-child
             > :first-child
