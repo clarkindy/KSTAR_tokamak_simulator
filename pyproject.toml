@@ -1,33 +1,37 @@
-[tool.poetry]
-name = "kstar-tokamak-simulator"
-version = "2.0.0-beta.1"
+[project]
+name = "kstar-tokamak-simulator-streamlit"
+version = "2.0.0-beta.2"
+requires-python = ">=3.11,<3.12"
 description = "A tokamak (nuclear fusion reactor) simulator with LSTM-based neural network (KSTAR-NN)"
-authors = ["Jaemin Seo <jseo@cau.ac.kr>"]
+authors = [{ name = "Jaemin Seo", email = "jseo@cau.ac.kr" }]
+maintainers = [{ name = "Myeongseop Jeon", email = "jeonms9338@snu.ac.kr" }]
 license = "MIT"
 readme = "README.md"
-package-mode = false
+dependencies = [
+  "tensorflow-cpu~=2.15",
+  "keras~=2.15",
+  # "QtPy==2.4.1",
+  "numpy~=1.26",
+  "scipy~=1.12",
+  # "matplotlib==3.8.2",
+  "streamlit~=1.30",
+  "plotly~=5.18",
+  "pandas~=2.2",
+  "pillow~=10.2",
+  # "numba==0.58.1",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.12"
-tensorflow-cpu = "^2.15.0"
-keras = "^2.15.0"
-# QtPy = "^2.4.1"
-numpy = "^1.26.3"
-scipy = "^1.12.0"
-# matplotlib = "^3.8.2"
-streamlit = "^1.30.0"
-plotly = "^5.18.0"
-pandas = "^2.2.0"
-pillow = "^10.2.0"
-# numba = "^0.58.1"
+[dependency-groups]
+dev = ["ruff==0.11.13"]
 
-[tool.poetry.group.dev.dependencies]
-black = "^23.12.1"
-isort = "^5.13.2"
+[tool.uv]
+package = false
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff]
+include = ["./kstar_simulator.py", "common/*.py"]
 
-[tool.isort]
-profile = "black"
+[tool.ruff.lint]
+select = ["I", "E4", "E7", "E9", "F"]
+
+[tool.ruff.format]
+exclude = ["common/**"]
