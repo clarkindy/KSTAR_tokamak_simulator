@@ -175,7 +175,7 @@ def predict_n_models(
 
 def initialize_session(session: Session):
     n_models = MAX_MODELS
-    session.n_models = n_models
+    session.n_models = 1
     # Initialize model indices
     session.kstar_lstm_indices = list(range(MAX_MODELS))
     session.k2rz_indices = list(range(MAX_SHAPE_MODELS))
