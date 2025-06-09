@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import os
+import random
 import sys
 import typing
 from collections import deque, namedtuple
 from collections.abc import Sequence
-from typing import Optional
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -79,7 +80,7 @@ LstmInputRow = namedtuple(
     ),
 )
 
-
+# fmt: off
 input_params = ['Ip [MA]','Bt [T]','GW.frac. [-]',\
                 'Pnb1a [MW]','Pnb1b [MW]','Pnb1c [MW]',\
                 'Pec2 [MW]','Pec3 [MW]','Zec2 [cm]','Zec3 [cm]',\
@@ -92,13 +93,14 @@ input_init = [0.5,1.8,0.4, 1.5, 0.0, 0.0, 0.0,0.0,  0.0,  0.0, 1.34, 2.22,1.7,0.
 output_params0 = ['betan','q95','q0','li']
 output_params1 = ['betap','wmhd']
 output_params2 = ['betan','betap','h89','h98','q95','q0','li','wmhd']
+# fmt: on
+
 
 class Session:
     n_models: int
-    kstar_nn: kstar_nn
-    kstar_lstm: kstar_v220505
-    k2rz: k2rz
-    bpw_nn: bpw_nn
+    kstar_lstm_indices: list[int]
+    k2rz_indices: list[int]
+    bpw_nn_indices: list[int]
     ip: float  # Plasma current [MA]
     bt: float  # Toroidal magnetic field [T]
     fgw: float  # Greenwald density fraction
@@ -129,19 +131,55 @@ class Session:
     initialized: bool
 
 
+Models = namedtuple("Models", ("data", "predict"))
+
+
+@st.cache_resource
+def get_models() -> Models:
+    return Models(
+        data={
+            "kstar_nn": load_kstar_nn_data(nn_model_path, n_models=1),
+            "kstar_lstm": load_kstar_v220505_data(lstm_model_path, n_models=MAX_MODELS),
+            "k2rz": load_k2rz_data(k2rz_model_path, n_models=MAX_SHAPE_MODELS),
+            "bpw_nn": load_tf_dense_data(
+                bpw_model_path,
+                n_models=MAX_MODELS,
+                y_mean=np.array([1.3630552066021155, 251779.19861710534]),
+                y_std=np.array([0.6252123013157276, 123097.77805034176]),
+            ),
+        },
+        predict={
+            "kstar_nn": predict_kstar_nn,
+            "kstar_lstm": predict_kstar_v220505,
+            "k2rz": predict_k2rz,
+            "bpw_nn": predict_tf_dense,
+        },
+    )
+
+
+_models = get_models()
+
+
+def predict_n_models(
+    session: Session,
+    models: Models,
+    model_name: Literal["kstar_lstm", "bpw_nn"],
+    x: Any,
+):
+    return models.predict[model_name](
+        models.data[model_name],
+        session[model_name + "_indices"][: session.n_models],
+        x,
+    )
+
+
 def initialize_session(session: Session):
     n_models = MAX_MODELS
     session.n_models = n_models
-    # Load models
-    session.kstar_nn = kstar_nn(model_path=nn_model_path, n_models=1)
-    session.kstar_lstm = kstar_v220505(model_path=lstm_model_path, n_models=n_models)
-    session.k2rz = k2rz(model_path=k2rz_model_path, n_models=MAX_SHAPE_MODELS)
-    session.bpw_nn = tf_dense_model(
-        model_path=bpw_model_path,
-        n_models=n_models,
-        ymean=[1.3630552066021155, 251779.19861710534],
-        ystd=[0.6252123013157276, 123097.77805034176],
-    )
+    # Initialize model indices
+    session.kstar_lstm_indices = list(range(MAX_MODELS))
+    session.k2rz_indices = list(range(MAX_SHAPE_MODELS))
+    session.bpw_nn_indices = list(range(MAX_MODELS))
     # Initialize input parameters
     for name, init in zip(input_names, input_init):
         setattr(session, name, init)
@@ -206,7 +244,6 @@ def render_kstar():
             min_value=1,
             max_value=MAX_MODELS,
             key="n_models",
-            on_change=reset_model_number,
         )
     with top21:
         st.button("Shuffle models", on_click=shuffle_models)
@@ -278,12 +315,6 @@ def render_kstar():
         )
 
 
-def reset_model_number():
-    session = typing.cast(Session, st.session_state)
-    session.kstar_lstm.nmodels = session.n_models
-    session.bpw_nn.nmodels = session.n_models
-
-
 def predict_next():
     session = typing.cast(Session, st.session_state)
     session.predict = True
@@ -350,8 +381,10 @@ def predict_boundary(session: Session):
     du = session.du
     dl = session.dl
 
-    session.k2rz.set_inputs(ip, bt, bp, rin, rout, k, du, dl)
-    rbdry, zbdry = session.k2rz.predict(post=True)
+    x = np.array([ip, bt, bp, rin, rout, k, du, dl])
+    rbdry, zbdry = _models.predict["k2rz"](
+        _models.data["k2rz"], session.k2rz_indices, x
+    )
     return rbdry, zbdry
 
 
@@ -602,26 +635,26 @@ def update_lstm_outputs(session: Session, y: np.ndarray):
     session.fgw_history.append(session.fgw)
 
 
-def predict_kstar_nn(session: Session):
+def predict_kstar_nn_(session: Session):
     idx_convert = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 10, 2]
     x = np.array([*(session[input_names[i]] for i in idx_convert), 0])
     x[9], x[10] = get_radii(x[9], x[10])
     x[14] = x[14] > 1.265 + 1.0e-4
     x[-1] = YEAR_IN
-    y = session.kstar_nn.predict(x)
+    y = _models.predict["kstar_nn"](_models.data["kstar_nn"], x)
     update_lstm_outputs(session, y)
     row = new_lstm_input_row(session)
     for _ in range(session.lstm_in.maxlen or 1):
         session.lstm_in.append(row)
 
 
-def predict_kstar_lstm(session: Session):
+def predict_kstar_lstm_(session: Session):
     session.lstm_in.append(new_lstm_input_row(session))
-    y = session.kstar_lstm.predict(np.array(session.lstm_in))
+    y = predict_n_models(session, _models, "kstar_lstm", np.array(session.lstm_in))
     update_lstm_outputs(session, y)
 
 
-def predict_bpw_nn(session: Session):
+def predict_bpw_nn_(session: Session):
     x = [
         session.betan[-1],
         session.ip,
@@ -633,7 +666,7 @@ def predict_bpw_nn(session: Session):
         session.dl,
     ]
     x[3], x[4] = get_radii(x[3], x[4])
-    y = session.bpw_nn.predict(x)
+    y = predict_n_models(session, _models, "bpw_nn", x)
     outputs = [session.betap, session.wmhd]
     for output, y_ in zip(outputs, y):
         # if len(output) == 1:
@@ -693,18 +726,18 @@ def update_h_factors(session: Session):
 
 def predict0d(session: Session, steady: bool = False):
     if steady:
-        predict_kstar_nn(session)
+        predict_kstar_nn_(session)
     else:
-        predict_kstar_lstm(session)
-    predict_bpw_nn(session)
+        predict_kstar_lstm_(session)
+    predict_bpw_nn_(session)
     update_h_factors(session)
 
 
 def shuffle_models():
     session = typing.cast(Session, st.session_state)
-    np.random.shuffle(session.k2rz.models)
-    np.random.shuffle(session.kstar_lstm.models)
-    np.random.shuffle(session.bpw_nn.models)
+    random.shuffle(session.k2rz_indices)
+    random.shuffle(session.kstar_lstm_indices)
+    random.shuffle(session.bpw_nn_indices)
     st.toast("Models shuffled!")
 
 
