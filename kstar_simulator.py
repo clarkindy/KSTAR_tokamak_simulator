@@ -133,7 +133,6 @@ class Session:
     q0: deque[float]  # q @ Magnetic axis
     li: deque[float]  # Internal inductance (normalized)
     wmhd: deque[float]  # Plasma energy [MJ]
-    fgw_history: deque[float]
     lstm_in: deque[LstmInputRow]
     predict: bool
     dump_outputs: bool
@@ -191,7 +190,6 @@ def initialize_session(session: Session):
     # Initialize input parameters
     for name, init in zip(input_names, input_init):
         setattr(session, name, init)
-    session.fgw_history = deque([session.fgw], maxlen=PLOT_LENGTH)
     # Initialize output parameters
     for name in output_params2:
         setattr(session, name, deque(maxlen=PLOT_LENGTH))
@@ -640,7 +638,6 @@ def update_lstm_outputs(session: Session, y: np.ndarray):
         # if len(output) == 1:
         #     output[0] = y_
         output.append(y_)
-    session.fgw_history.append(session.fgw)
 
 
 def predict_kstar_nn_(session: Session):
@@ -832,13 +829,16 @@ def render_evolution_plot(session: Session):
         rows=2,
         cols=1,
     )
+    # Figure of merit for fusion gain factor
+    # See (for example) A. Sips et al. 2003 Fusion Sci. Technol. 44 605-617
+    g = np.array(session.betan) * np.array(session.h89) / np.array(session.q95) ** 2
     fig.add_traces(
         [
             go.Scatter(
                 mode="lines",
                 x=time_avail,
-                y=np.array(session.fgw_history),
-                name="ne/nGW",
+                y=2 * g,
+                name="2\u00d7G",
                 legendgroup="3",
             ),
             go.Scatter(
