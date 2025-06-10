@@ -1,8 +1,10 @@
+import json
+import zipfile
 from collections import namedtuple
 from typing import Any
-import json, zipfile
+
 import numpy as np
-from tensorflow.keras import models, layers
+from tensorflow.keras import layers, models
 
 RZModelData = namedtuple("RZModelData", ("models", "n_theta"))
 
