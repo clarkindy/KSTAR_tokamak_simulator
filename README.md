@@ -1,4 +1,16 @@
 # KSTAR tokamak simulator (KSTAR-NN)
+
+> [!NOTE]
+>
+> This is an unofficial Streamlit port of KSTAR_tokamak_simulator. You might want to check out [the original repository](https://github.com/jaem-seo/KSTAR_tokamak_simulator).
+>
+> The key differences to the original version are as follows:
+>
+> - When auto-run is enabled, the slider should be stopped for a moment for the changed value to be sent to the simulator. This leads to slower running speed; the demo video is accelerated to 4x the original speed.
+> - The set of variables and their orders are changed. This version shows $`H_{98(y,2)}`$ instead of $`\beta_p`$.
+> - `Dump outputs` button is replaced by `Toggle display` button, which shows the table of previously dumped variables.
+> - The checkboxes `Plot NBI/EC` and `Plot heat load` are removed. You can toggle their display by clicking on the respective parts of the legend.
+
 - KSTAR is a tokamak (donut-shaped nuclear fusion device) located in South Korea.
 - This repository provides a KSTAR tokamak simulation tool with LSTM-based neural network.
 - See also [AI Tokamak Control](https://github.com/jaem-seo/AI_tokamak_control) where the AI replaces the manual control of this simulator.
@@ -16,12 +28,12 @@ $ cd KSTAR_tokamak_simulator
 $ python kstar_simulator_v0.py
 ```
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/46472432/165520027-c4f79698-a816-49a3-8e75-fd44985ad95c.png">
+  <img src="/images/gui.png">
 </p>
 
 - Slide the toggles in the left side and see the fusion plasma evolution in the right side.
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/46472432/165654530-c8230a8c-e9a7-4574-bae3-bab646bb61dc.gif">
+  <img src="/images/demo.gif">
 </p>
 
 - I hope you get insight with this virtual experiment!
