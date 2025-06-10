@@ -830,8 +830,13 @@ def render_evolution_plot(session: Session):
         cols=1,
     )
     # Figure of merit for fusion gain factor
-    # See (for example) A. Sips et al. 2003 Fusion Sci. Technol. 44 605-617
-    g = np.array(session.betan) * np.array(session.h89) / np.array(session.q95) ** 2
+    # See (for example) A. Sips, et al. Fusion Sci. Technol. 44 (2003): 605-617.
+    g = np.array(
+        [
+            betan * h89 / q95**2
+            for betan, h89, q95 in zip(session.betan, session.h89, session.q95)
+        ]
+    )
     fig.add_traces(
         [
             go.Scatter(
