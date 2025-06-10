@@ -17,15 +17,15 @@
 
 # Installation
 - You can install by
-```
+```console
 $ git clone https://github.com/jaem-seo/KSTAR_tokamak_simulator.git
 $ cd KSTAR_tokamak_simulator
 ```
 
 # Try it out
-- Open the GUI by typing below. It might take a bit depending on your environment.
-```
-$ python kstar_simulator_v0.py
+- [uv](https://docs.astral.sh/uv) is recommended to run this app. Open the GUI by typing below. It might take a bit depending on your environment.
+```console
+$ uv run streamlit run kstar_simulator.py
 ```
 <p align="center">
   <img src="/images/gui.png">
