@@ -18,8 +18,9 @@
 # Installation
 - You can install by
 ```console
-$ git clone https://github.com/jaem-seo/KSTAR_tokamak_simulator.git
+$ git clone https://github.com/clarkindy/KSTAR_tokamak_simulator.git
 $ cd KSTAR_tokamak_simulator
+$ git switch testing/clarkindy
 ```
 
 # Try it out
